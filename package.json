@@ -1,0 +1,13 @@
+{
+  "name": "anki-dynamic",
+  "version": "1.0.0",
+  "description": "Js lib for smarter anki cards.",
+  "main": "_dynamicCard.js",
+  "repository": "git@github.com:dangbert/anki-dynamic.git",
+  "author": "Daniel Engbert <end1@umbc.edu>",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^9.1.4"
+  }
+}
