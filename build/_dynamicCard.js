@@ -14,7 +14,58 @@ function getFront() {
   return trimContents(val);
 }
 
+var EXCLUDE_PATTERNS = [/(\([^()]*\))/, // "(E)", "(EN)", etc
+/(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
+/(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
+/(\-&gt|->)/];
+
+/**
+ * returns provided string once any poritions matching EXCLUDE_PATTERNS are removed.
+ */
 function trimContents(s) {
+  s = s.trim();
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = EXCLUDE_PATTERNS[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var p = _step.value;
+
+      var regex = new RegExp(p, 'ig');
+
+      var match = void 0,
+          matches = [];
+      while (match = regex.exec(s)) {
+
+        console.log('match = ');
+        console.log(match);
+        console.log('match length = ' + match.length);
+        console.log('group 0: ');
+        console.log(match.groups);
+
+        var left = s.substring(0, match.index),
+            right = s.substring(match.index + match[0].length + 1, s.length);
+        s = left + right;
+        //console.log(`left: "${left}", right: "${right}", s: "${s}"`);
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
   return s.trim();
 }
 
@@ -33,13 +84,13 @@ async function fetchSentences(val) {
 function formattedText(text, bold) {
   var index = 0;
   var nodes = [];
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
 
   try {
-    for (var _iterator = bold[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var b = _step.value;
+    for (var _iterator2 = bold[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var b = _step2.value;
 
       if (index < b[0]) {
         nodes.push({
@@ -54,16 +105,16 @@ function formattedText(text, bold) {
       index = b[1] + 1;
     }
   } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
       }
     } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
+      if (_didIteratorError2) {
+        throw _iteratorError2;
       }
     }
   }

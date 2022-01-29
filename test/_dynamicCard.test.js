@@ -4,29 +4,42 @@ import { expect } from 'chai';
 
 //const calculator = require('../src/calculator')
 
+const testExamples = (examples, f) => {
+	examples.forEach(pair => {
+		console.log(pair)
+		expect(pair.length).to.equal(2);
+		console.log('testing: ' + pair[0])
+		expect(f(pair[0])).to.equal(pair[1]);
+		
+	});
+}
+
 describe('_dynamic_Card.js', () => {
-	describe('parseContents()', () => {
-		it('should remove language labels', () => {
-			const examples = [
+	describe('trimContents()', () => {
+		it('should remove content in parenthesis', () => {
+			testExamples([
+				// [input, expected output],
+				["Gesticulate (E)", "Gesticulate"],
+				["Gesticulate (EN)", "Gesticulate"],
+				["Gesticulate (EN) blah (EN)", "Gesticulate blah"],
+			], trimContents);
+		});
+
+		it('should remove content in brackets', () => {
+			testExamples([
 				// [input, expected output],
 				["misc text here!", "misc text here!"],
 				["mais perto [P]", "mais perto"],
 				["A praia [pt]", "A praia"],
-				["A praia [pt]", "A praia"],
-				["Gesticulate (E)", "Gesticulate"],
-				["el acantilado -&gt; [PT]", "el acantilado -&gt; [PT]"],
-				["El transbordador, el ferry ->[PT]", "El transbordador, el ferry"],
-			];
+				["A praia [pt] blah [pt] blah2", "A praia blah blah2"],
+			], trimContents);
+		});
 
-			examples.forEach(pair => {
-				console.log(pair)
-				expect(pair.length).to.equal(2);
-				console.log('testing: ' + pair[0])
-				expect(trimContents(pair[0])).to.equal(pair[1]);
-				
-			});
-			for (let pair of examples) {
-			}
+		it('should remove arrows', () => {
+			testExamples([
+				["El transbordador, el ferry ->", "El transbordador, el ferry"],
+				["el acantilado -&gt; ", "el acantilado"],
+			], trimContents);
 		});
 
 	})

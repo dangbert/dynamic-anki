@@ -10,6 +10,7 @@
   "scripts": {
     "build": "babel src -d build",
     "test": "yarn mocha",
+    "install": "yarn build && cp build/_dynamicCard.js ~/.local/share/Anki2/User\\ 1/collection.media/ && echo 'installed in anki dir!'",
     "prepare": "husky install"
   },
   "dependencies": {

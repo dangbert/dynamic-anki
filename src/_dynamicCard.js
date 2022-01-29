@@ -12,7 +12,36 @@ export function getFront() {
   return trimContents(val);
 }
 
+const EXCLUDE_PATTERNS = [
+  /(\([^()]*\))/, // "(E)", "(EN)", etc
+  /(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
+  /(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
+  /(\-&gt|->)/,     // "->", "-&gt"
+];
+
+/**
+ * returns provided string once any poritions matching EXCLUDE_PATTERNS are removed.
+ */
 export function trimContents(s) {
+  s = s.trim();
+
+  for (let p of EXCLUDE_PATTERNS) {
+    const regex = new RegExp(p, 'ig');
+
+    let match, matches = [];
+    while (match = regex.exec(s)) {
+
+      console.log('match = ');
+      console.log(match);
+      console.log('match length = ' + match.length);
+      console.log('group 0: ');
+      console.log(match.groups);
+
+      const left = s.substring(0, match.index), right = s.substring(match.index + match[0].length + 1, s.length);
+      s = left + right;
+      //console.log(`left: "${left}", right: "${right}", s: "${s}"`);
+    }
+  }
   return s.trim();
 }
 

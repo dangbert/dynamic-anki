@@ -8,7 +8,16 @@ This lib interfaces with a personal API endpoint I built that returns a list of 
 
 ## How to use:
 
-Add the following to the HTMl template for a given card type:
+1. Method 1:
+Download `_dynamicCard.js` from the `build/` folder and place it directly in your Anki media folder.  Then add this html to the bottom of a card template:
+
+````html
+<script type="text/javascript" src="_dynamicCard.js"></script>
+````
+
+
+2. Method 2: (not currently working due to a CORB issue)
+~~Add the following to the HTML template for a given card type:~~
 
 ````html
 <script type="text/javascript" src="https://raw.githubusercontent.com/dangbert/anki-dynamic/master/build/_dynamicCard.js"></script>
@@ -42,7 +51,7 @@ yarn mocha
 yarn build
 ````
 
-You can also open `_test.html` in your browser to simulate rendering a flashcard (for quick testing of this js lib).  But ultimately you should open Anki and view a few cards back to back (while viewing the browser dev console for errors).
+You can also open `index.html` in your browser to simulate rendering a flashcard (for quick testing of this js lib).  But ultimately you should open Anki and view a few cards back to back (while viewing the browser dev console for errors).
 
 #### How babel is used:
 
