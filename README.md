@@ -11,7 +11,7 @@ This lib interfaces with a personal API endpoint I built that returns a list of 
 Add the following to the HTMl template for a given card type:
 
 ````html
-<script type="text/javascript" src="https://raw.githubusercontent.com/dangbert/anki-dynamic/master/_dynamicCard.js"></script>
+<script type="text/javascript" src="https://raw.githubusercontent.com/dangbert/anki-dynamic/master/build/_dynamicCard.js"></script>
 ````
 
 Note that the card template must have an element with `id="front"`.
@@ -37,6 +37,15 @@ Note: I added el and tr but they don't currently work with this lib (probably an
 ````bash
 # run unit tests:
 yarn mocha
+
+# compile js file in build folder:
+yarn build
 ````
 
 You can also open `_test.html` in your browser to simulate rendering a flashcard (for quick testing of this js lib).  But ultimately you should open Anki and view a few cards back to back (while viewing the browser dev console for errors).
+
+#### How babel is used:
+
+Some functions in _dynamicCard.js are exported (so they can be unit tested).  Babel is being used to compiled a version of this file without exports that will run in [most browsers](https://caniuse.com/es6).
+
+In the future babel will be further helpful if I start using typescript for this repo.

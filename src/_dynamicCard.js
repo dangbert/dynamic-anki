@@ -2,7 +2,7 @@
  * get text content of front of anki card (just inner html values).
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
-function getFront() {
+export function getFront() {
   let val = $("#front").html();
   const parser = new DOMParser();
   let doc = parser.parseFromString(val, "text/html");
@@ -12,11 +12,11 @@ function getFront() {
   return trimContents(val);
 }
 
-function trimContents(s) {
+export function trimContents(s) {
   return s.trim();
 }
 
-async function fetchSentences(val) {
+export async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
   const data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', {phrase: val, offset: 0 });
   console.log('api call result:');
@@ -28,7 +28,7 @@ async function fetchSentences(val) {
  * format a sentence by bolding the desired indices.
  * based on https://github.com/dangbert/personalpedia/blob/master/react-app/src/components/ToolsApp/Vocab.tsx#L142
  */
-function formattedText(text, bold) {
+export function formattedText(text, bold) {
   let index = 0;
   const nodes = [];
   for (let b of bold) {
@@ -60,8 +60,10 @@ function formattedText(text, bold) {
 }
 
 
-function randomFont(id) {
+export function randomFont(id) {
   // https://www.reddit.com/6u1kvm
+  if (!window) return;
+
   var sheet = window.document.styleSheets[0];
   //sheet.insertRule('strong { color: red; }'
   //sheet.cssRules.length);
