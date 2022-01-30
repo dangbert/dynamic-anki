@@ -1,23 +1,28 @@
 "use strict";
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 /**
- * get text content of front of anki card (just inner html values).
+ * gets the html content and stripped text content of the front of the anki card.
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
 function getFront() {
-  var val = $("#front").html();
+  var orig = $("#front").html(); // eslint-disable-line
+  // get just the inner html values
   var parser = new DOMParser();
-  var doc = parser.parseFromString(val, "text/html");
+  var doc = parser.parseFromString(orig, "text/html");
 
-  val = doc.all[0].textContent;
+  var val = doc.all[0].textContent;
   //console.log("parsed val = "); console.log(val);
-  return trimContents(val);
+
+  // remove unwanted portions of string
+  return [orig, trimContents(val)];
 }
 
 var EXCLUDE_PATTERNS = [/(\([^()]*\))/, // "(E)", "(EN)", etc
-/(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
-/(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
-/(\-&gt|->)/];
+/(\[[^[\]]*\])/, // "[P]", "[PT]", etc
+/(\[[^[\]]*\])/, // "[P]", "[PT]", etc
+/(-&gt|->)/];
 
 /**
  * returns provided string once any poritions matching EXCLUDE_PATTERNS are removed.
@@ -35,16 +40,9 @@ function trimContents(s) {
 
       var regex = new RegExp(p, 'ig');
 
-      var match = void 0,
-          matches = [];
+      var match = void 0;
+      // eslint-disable-next-line
       while (match = regex.exec(s)) {
-
-        console.log('match = ');
-        console.log(match);
-        console.log('match length = ' + match.length);
-        console.log('group 0: ');
-        console.log(match.groups);
-
         var left = s.substring(0, match.index),
             right = s.substring(match.index + match[0].length + 1, s.length);
         s = left + right;
@@ -71,6 +69,7 @@ function trimContents(s) {
 
 async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
+  // eslint-disable-next-line
   var data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', { phrase: val, offset: 0 });
   console.log('api call result:');
   console.log(data);
@@ -126,7 +125,7 @@ function formattedText(text, bold) {
     });
   }
 
-  var tmp = nodes.map(function (n, index) {
+  var tmp = nodes.map(function (n) {
     return "<span>\n      " + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + "\n    </span>";
   });
   return tmp.join(''); // one combined string
@@ -134,15 +133,13 @@ function formattedText(text, bold) {
 
 function randomFont(id) {
   // https://www.reddit.com/6u1kvm
-  if (!window) return;
-
-  var sheet = window.document.styleSheets[0];
+  //var sheet = window.document.styleSheets[0];
   //sheet.insertRule('strong { color: red; }'
   //sheet.cssRules.length);
 
   var elem = document.getElementById(id);
   if (!elem) return;
-  style = elem.style;
+  var style = elem.style;
   style.fontFamily = "random_" + Math.floor(Math.random() * 36);
 
   var fontSize = 14 + Math.floor(Math.random() * 8);
@@ -154,8 +151,12 @@ function randomFont(id) {
   randomFont('front');
   randomFont('back');
 
-  var front = getFront();
-  var sentences = await fetchSentences(front);
+  var _getFront = getFront(),
+      _getFront2 = _slicedToArray(_getFront, 2),
+      frontHtml = _getFront2[0],
+      frontText = _getFront2[1];
+
+  var sentences = await fetchSentences(frontText);
   console.log("sentences = ");
   console.log(sentences);
 
@@ -164,6 +165,7 @@ function randomFont(id) {
   console.log('s =');
   console.log(s);
   if (s) {
-    $('#front').html(formattedText(s.text, s.bold));
+    // eslint-disable-next-line
+    $('#front').html("\n      " + formattedText(s.text, s.bold) + "\n      <br/><br/>\n      " + frontHtml + "\n    ");
   }
 })();

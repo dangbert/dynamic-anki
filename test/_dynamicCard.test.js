@@ -1,16 +1,15 @@
 import { trimContents } from '../src/_dynamicCard.js';
 
+import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 //const calculator = require('../src/calculator')
 
 const testExamples = (examples, f) => {
 	examples.forEach(pair => {
-		console.log(pair)
 		expect(pair.length).to.equal(2);
-		console.log('testing: ' + pair[0])
+		//console.log('testing: ' + pair[0])
 		expect(f(pair[0])).to.equal(pair[1]);
-		
 	});
 }
 

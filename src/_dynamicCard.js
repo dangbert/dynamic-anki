@@ -1,22 +1,25 @@
 /**
- * get text content of front of anki card (just inner html values).
+ * gets the html content and stripped text content of the front of the anki card.
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
 export function getFront() {
-  let val = $("#front").html();
+  const orig = $("#front").html(); // eslint-disable-line
+  // get just the inner html values
   const parser = new DOMParser();
-  let doc = parser.parseFromString(val, "text/html");
+  let doc = parser.parseFromString(orig, "text/html");
 
-  val = doc.all[0].textContent;
+  const val = doc.all[0].textContent;
   //console.log("parsed val = "); console.log(val);
-  return trimContents(val);
+
+  // remove unwanted portions of string
+  return [orig, trimContents(val)];
 }
 
 const EXCLUDE_PATTERNS = [
   /(\([^()]*\))/, // "(E)", "(EN)", etc
-  /(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
-  /(\[[^\[\]]*\])/, // "[P]", "[PT]", etc
-  /(\-&gt|->)/,     // "->", "-&gt"
+  /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
+  /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
+  /(-&gt|->)/,     // "->", "-&gt"
 ];
 
 /**
@@ -28,15 +31,10 @@ export function trimContents(s) {
   for (let p of EXCLUDE_PATTERNS) {
     const regex = new RegExp(p, 'ig');
 
-    let match, matches = [];
+
+    let match;
+    // eslint-disable-next-line
     while (match = regex.exec(s)) {
-
-      console.log('match = ');
-      console.log(match);
-      console.log('match length = ' + match.length);
-      console.log('group 0: ');
-      console.log(match.groups);
-
       const left = s.substring(0, match.index), right = s.substring(match.index + match[0].length + 1, s.length);
       s = left + right;
       //console.log(`left: "${left}", right: "${right}", s: "${s}"`);
@@ -47,6 +45,7 @@ export function trimContents(s) {
 
 export async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
+  // eslint-disable-next-line
   const data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', {phrase: val, offset: 0 });
   console.log('api call result:');
   console.log(data);
@@ -80,7 +79,7 @@ export function formattedText(text, bold) {
     });
   }
 
-  const tmp = nodes.map((n, index) => (
+  const tmp = nodes.map((n) => (
     `<span>
       ${n.bold ? '<strong>' + n.content + '</strong>' : n.content}
     </span>`
@@ -91,15 +90,13 @@ export function formattedText(text, bold) {
 
 export function randomFont(id) {
   // https://www.reddit.com/6u1kvm
-  if (!window) return;
-
-  var sheet = window.document.styleSheets[0];
+  //var sheet = window.document.styleSheets[0];
   //sheet.insertRule('strong { color: red; }'
   //sheet.cssRules.length);
 
   const elem = document.getElementById(id);
   if (!elem) return;
-  style = elem.style;
+  const style = elem.style;
   style.fontFamily = "random_" + Math.floor(Math.random() * 36);
 
   const fontSize = 14 + Math.floor(Math.random() * 8);
@@ -111,8 +108,9 @@ export function randomFont(id) {
   randomFont('front');
   randomFont('back');
 
-  const front = getFront();
-  const sentences = await fetchSentences(front);
+  const [frontHtml, frontText] = getFront();
+
+  const sentences = await fetchSentences(frontText);
   console.log("sentences = ");
   console.log(sentences);
 
@@ -121,6 +119,11 @@ export function randomFont(id) {
   console.log('s =');
   console.log(s);
   if (s) {
-    $('#front').html(formattedText(s.text, s.bold));
+    // eslint-disable-next-line
+    $('#front').html(`
+      ${formattedText(s.text, s.bold)}
+      <br/><br/>
+      ${frontHtml}
+    `);
   }
 })();

@@ -2,4 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 # https://github.com/typicode/husky
-yarn build && git add -u build
+yarn test && yarn build && git add -u build
