@@ -20,6 +20,7 @@ const EXCLUDE_PATTERNS = [
   /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
   /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
   /(-&gt|->)/,     // "->", "-&gt"
+  /(Replay)/,     // hack for Android (must be coming from audio element...)
 ];
 
 /**
@@ -109,6 +110,9 @@ export function randomFont(id) {
   randomFont('back');
 
   const [frontHtml, frontText] = getFront();
+  console.log('frontHtml = ');
+  console.log(frontHtml);
+  console.log(`frontText="${frontText}"`);
 
   const sentences = await fetchSentences(frontText);
   console.log("sentences = ");

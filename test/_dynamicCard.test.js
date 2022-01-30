@@ -41,6 +41,12 @@ describe('_dynamic_Card.js', () => {
 			], trimContents);
 		});
 
+		it('should remove "Replay" (for Android)', () => {
+			testExamples([
+				["εννέαReplay", "εννέα"],
+			], trimContents);
+		});
+
 	})
 
 })

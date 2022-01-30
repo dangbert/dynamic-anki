@@ -22,7 +22,8 @@ function getFront() {
 var EXCLUDE_PATTERNS = [/(\([^()]*\))/, // "(E)", "(EN)", etc
 /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
 /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
-/(-&gt|->)/];
+/(-&gt|->)/, // "->", "-&gt"
+/(Replay)/];
 
 /**
  * returns provided string once any poritions matching EXCLUDE_PATTERNS are removed.
@@ -155,6 +156,10 @@ function randomFont(id) {
       _getFront2 = _slicedToArray(_getFront, 2),
       frontHtml = _getFront2[0],
       frontText = _getFront2[1];
+
+  console.log('frontHtml = ');
+  console.log(frontHtml);
+  console.log("frontText=\"" + frontText + "\"");
 
   var sentences = await fetchSentences(frontText);
   console.log("sentences = ");

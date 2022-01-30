@@ -15,6 +15,11 @@ Download `_dynamicCard.js` from the `build/` folder and place it directly in you
 <script type="text/javascript" src="_dynamicCard.js"></script>
 ````
 
+Note: if updating an existing version of this file, to ensure the file is actually synced on your mobile device do the following:
+* delete file in desktop media folder, then open and sync desktop, then sync mobile device
+* close and open anki desktop (doesn't hurt)
+* copy file back desktop media folder, and sync desktop and then mobile device
+
 
 2. Method 2: (not currently working due to a CORB issue)
 ~~Add the following to the HTML template for a given card type:~~
