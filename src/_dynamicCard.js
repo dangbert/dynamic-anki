@@ -3,7 +3,7 @@
  * e.g. gets the text content of the front of the Anki card.
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
-export function parseText(id) {
+function parseText(id, removeArticle=true) {
   const orig = $(`#${id}`).html(); // eslint-disable-line
   // get just the inner html values
   const parser = new DOMParser();
@@ -13,7 +13,11 @@ export function parseText(id) {
   //console.log("parsed val = "); console.log(val);
 
   // remove unwanted portions of string
-  return [orig, trimContents(val)];
+  let res = trimContents(val);
+  if (removeArticle) {
+    res = stripArticle(res);
+  }
+  return [orig, res];
 }
 
 const EXCLUDE_PATTERNS = [
@@ -43,14 +47,60 @@ export function trimContents(s) {
   return s.trim();
 }
 
+const EXCLUDE_ARTICLES = [
+  // spanish articles
+  "los", "los", "las", "las",
+  "unos", "unos", "unas", "unas",
+  "el", "el", "la", "la",
+  "un", "un", "una", "una",
+
+  // portuguese articles
+  "os", "as", "o", "a",
+  "um", "uma", "umas", "uns",
+
+  // english articles
+  "the", "a", "an", 
+
+  // german articles
+  //   https://www.clozemaster.com/blog/german-definite-articles/
+  "der", "die", "das", "die",
+  "den", "dem", "des",
+
+  // french articles
+  //   https://mylanguages.org/french_articles.php
+  "L’", // TODO: get this one to work (it isn't followed by a space)
+  "le", "la", "les",
+  "un", "une", "des",
+
+  // greek articles
+  //  https://www.foundalis.com/lan/definart.htm
+  "ο", "η", "το",
+  "του", "της",	"του",
+  "τον", "την",	"το",
+  "οι", "οι", "τα",
+  "των", "των",	"των",
+  "τους", "τις", "τα",
+];
+
 /**
  * Removes any leading grammar articles from the given text string, and returns the result.
  */
-//export function stripArticles(s) {
-//
-//}
+export function stripArticle(s) {
+  s = s.trim();
 
-export async function fetchSentences(val) {
+  for (const art of EXCLUDE_ARTICLES) {
+    //console.log("checking for article: " + art);
+    const index = s.toLowerCase().indexOf(art.toLowerCase())
+    // ensure any match is a complete word (i.e. followed by a space)
+    if (index === 0 && s[art.length] === ' ') {
+      //console.log('found match, index = ' + index);
+      return s.substring(art.length).trim();
+    }
+  }
+  return s;
+}
+
+async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
   // eslint-disable-next-line
   const data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', {phrase: val, offset: 0 });
@@ -63,7 +113,7 @@ export async function fetchSentences(val) {
  * format a sentence by bolding the desired indices.
  * based on https://github.com/dangbert/personalpedia/blob/master/react-app/src/components/ToolsApp/Vocab.tsx#L142
  */
-export function formattedText(text, bold) {
+function formattedText(text, bold) {
   let index = 0;
   const nodes = [];
   for (let b of bold) {
@@ -95,7 +145,7 @@ export function formattedText(text, bold) {
 }
 
 
-export function randomFont(id) {
+function randomFont(id) {
   // https://www.reddit.com/6u1kvm
   //var sheet = window.document.styleSheets[0];
   //sheet.insertRule('strong { color: red; }'
@@ -106,7 +156,7 @@ export function randomFont(id) {
   const style = elem.style;
   style.fontFamily = "random_" + Math.floor(Math.random() * 36);
 
-  const fontSize = 14 + Math.floor(Math.random() * 8);
+  const fontSize = 16 + Math.floor(Math.random() * 8);
   console.log("setting fontsize to " + fontSize);
   style.fontSize = `${fontSize}px`;
 }
@@ -128,11 +178,11 @@ const InjectionAction = {
  * @param {string} prepend key in InjectionAction, defining how to insert the sentence.
  * @returns {void}
  */
-async function injectSentences(id, mode=InjectionAction.Prepend) {
+async function injectSentences(id, mode=InjectionAction.Prepend, removeArticle=true) {
   const $elem = $(`#${id}`); // eslint-disable-line
   if (!$elem) return; // ensure element exists
 
-  const [elemHtml, elemText] = parseText(id);
+  const [elemHtml, elemText] = parseText(id, removeArticle);
   console.log('elemHtml = ');
   console.log(elemHtml);
   console.log(`elemText="${elemText}"`);

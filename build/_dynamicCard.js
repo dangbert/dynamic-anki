@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -8,7 +8,9 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
 function parseText(id) {
-  var orig = $('#' + id).html(); // eslint-disable-line
+  var removeArticle = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+  var orig = $("#" + id).html(); // eslint-disable-line
   // get just the inner html values
   var parser = new DOMParser();
   var doc = parser.parseFromString(orig, "text/html");
@@ -17,7 +19,11 @@ function parseText(id) {
   //console.log("parsed val = "); console.log(val);
 
   // remove unwanted portions of string
-  return [orig, trimContents(val)];
+  var res = trimContents(val);
+  if (removeArticle) {
+    res = stripArticle(res);
+  }
+  return [orig, res];
 }
 
 var EXCLUDE_PATTERNS = [/(\([^()]*\))/, // "(E)", "(EN)", etc
@@ -68,12 +74,68 @@ function trimContents(s) {
   return s.trim();
 }
 
+var EXCLUDE_ARTICLES = [
+// spanish articles
+"los", "los", "las", "las", "unos", "unos", "unas", "unas", "el", "el", "la", "la", "un", "un", "una", "una",
+
+// portuguese articles
+"os", "as", "o", "a", "um", "uma", "umas", "uns",
+
+// english articles
+"the", "a", "an",
+
+// german articles
+//   https://www.clozemaster.com/blog/german-definite-articles/
+"der", "die", "das", "die", "den", "dem", "des",
+
+// french articles
+//   https://mylanguages.org/french_articles.php
+"L’", // TODO: get this one to work (it isn't followed by a space)
+"le", "la", "les", "un", "une", "des",
+
+// greek articles
+//  https://www.foundalis.com/lan/definart.htm
+"ο", "η", "το", "του", "της", "του", "τον", "την", "το", "οι", "οι", "τα", "των", "των", "των", "τους", "τις", "τα"];
+
 /**
  * Removes any leading grammar articles from the given text string, and returns the result.
  */
-//export function stripArticles(s) {
-//
-//}
+function stripArticle(s) {
+  s = s.trim();
+
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = EXCLUDE_ARTICLES[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var art = _step2.value;
+
+      //console.log("checking for article: " + art);
+      var index = s.toLowerCase().indexOf(art.toLowerCase());
+      // ensure any match is a complete word (i.e. followed by a space)
+      if (index === 0 && s[art.length] === ' ') {
+        //console.log('found match, index = ' + index);
+        return s.substring(art.length).trim();
+      }
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
+  return s;
+}
 
 async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
@@ -91,13 +153,13 @@ async function fetchSentences(val) {
 function formattedText(text, bold) {
   var index = 0;
   var nodes = [];
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
+  var _iteratorNormalCompletion3 = true;
+  var _didIteratorError3 = false;
+  var _iteratorError3 = undefined;
 
   try {
-    for (var _iterator2 = bold[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var b = _step2.value;
+    for (var _iterator3 = bold[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      var b = _step3.value;
 
       if (index < b[0]) {
         nodes.push({
@@ -112,16 +174,16 @@ function formattedText(text, bold) {
       index = b[1] + 1;
     }
   } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
+    _didIteratorError3 = true;
+    _iteratorError3 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return) {
-        _iterator2.return();
+      if (!_iteratorNormalCompletion3 && _iterator3.return) {
+        _iterator3.return();
       }
     } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
+      if (_didIteratorError3) {
+        throw _iteratorError3;
       }
     }
   }
@@ -134,7 +196,7 @@ function formattedText(text, bold) {
   }
 
   var tmp = nodes.map(function (n) {
-    return '<span>\n      ' + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + '\n    </span>';
+    return "<span>\n      " + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + "\n    </span>";
   });
   return tmp.join(''); // one combined string
 }
@@ -150,9 +212,9 @@ function randomFont(id) {
   var style = elem.style;
   style.fontFamily = "random_" + Math.floor(Math.random() * 36);
 
-  var fontSize = 14 + Math.floor(Math.random() * 8);
+  var fontSize = 16 + Math.floor(Math.random() * 8);
   console.log("setting fontsize to " + fontSize);
-  style.fontSize = fontSize + 'px';
+  style.fontSize = fontSize + "px";
 }
 
 /**
@@ -174,18 +236,19 @@ var InjectionAction = {
  */
 async function injectSentences(id) {
   var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : InjectionAction.Prepend;
+  var removeArticle = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
-  var $elem = $('#' + id); // eslint-disable-line
+  var $elem = $("#" + id); // eslint-disable-line
   if (!$elem) return; // ensure element exists
 
-  var _parseText = parseText(id),
+  var _parseText = parseText(id, removeArticle),
       _parseText2 = _slicedToArray(_parseText, 2),
       elemHtml = _parseText2[0],
       elemText = _parseText2[1];
 
   console.log('elemHtml = ');
   console.log(elemHtml);
-  console.log('elemText="' + elemText + '"');
+  console.log("elemText=\"" + elemText + "\"");
 
   var sentences = await fetchSentences(elemText);
   console.log("sentences = ");
@@ -198,11 +261,11 @@ async function injectSentences(id) {
 
   if (!s) return;
 
-  var newHtml = '' + formattedText(s.text, s.bold);
+  var newHtml = "" + formattedText(s.text, s.bold);
   if (mode === InjectionAction.Prepend) {
-    newHtml = newHtml + '<br/><br/>' + elemHtml;
+    newHtml = newHtml + "<br/><br/>" + elemHtml;
   } else if (mode === InjectionAction.Append) {
-    newHtml = elemHtml + '<br/><br/>' + newHtml;
+    newHtml = elemHtml + "<br/><br/>" + newHtml;
   }
 
   $elem.html(newHtml); // eslint-disable-line
