@@ -180,13 +180,16 @@ const InjectionAction = {
  */
 async function injectSentences(id, mode=InjectionAction.Prepend, removeArticle=true) {
   const $elem = $(`#${id}`); // eslint-disable-line
-  if (!$elem) return; // ensure element exists
-
   const [elemHtml, elemText] = parseText(id, removeArticle);
   console.log('elemHtml = ');
   console.log(elemHtml);
   console.log(`elemText="${elemText}"`);
 
+  // large texts are unlikely to get a sentence match
+  if (elemText.length > 35) {
+    console.log('skipping sentence lookup for large text');
+    return;
+  }
   const sentences = await fetchSentences(elemText);
   console.log("sentences = ");
   console.log(sentences);
@@ -201,18 +204,33 @@ async function injectSentences(id, mode=InjectionAction.Prepend, removeArticle=t
   let newHtml = `${formattedText(s.text, s.bold)}`;
   if (mode === InjectionAction.Prepend) {
     newHtml = `${newHtml}<br/><br/>${elemHtml}`;
-  }
-  else if (mode === InjectionAction.Append) {
+  } else if (mode === InjectionAction.Append) {
     newHtml = `${elemHtml}<br/><br/>${newHtml}`;
   }
 
   $elem.html(newHtml); // eslint-disable-line
 }
 
+function elementExists(id) {
+  const $elem = $(`#${id}`); // eslint-disable-line
+  return $elem.length > 0;
+}
+
+
+
 (async () => {
   randomFont('front');
   randomFont('back');
 
-  injectSentences('front', InjectionAction.Prepend);
-  injectSentences('back', InjectionAction.Append);
+  if (elementExists('back')) {
+    // TODO: prevent duplicate search of front once card is flipped
+    //  (perhaps cache the front contents in a hidden element)
+    injectSentences('back', InjectionAction.Append);
+
+    // needed for front to still have a sentence
+    //   (changes get reset when card is flipped)
+    injectSentences('front', InjectionAction.Prepend);
+  } else {
+    injectSentences('front', InjectionAction.Prepend);
+  }
 })();
