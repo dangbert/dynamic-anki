@@ -1,13 +1,14 @@
-"use strict";
+'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 /**
- * gets the html content and stripped text content of the front of the anki card.
+ * gets the html content and stripped text content of a given text element (specified by id).
+ * e.g. gets the text content of the front of the Anki card.
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
-function getFront() {
-  var orig = $("#front").html(); // eslint-disable-line
+function parseText(id) {
+  var orig = $('#' + id).html(); // eslint-disable-line
   // get just the inner html values
   var parser = new DOMParser();
   var doc = parser.parseFromString(orig, "text/html");
@@ -26,7 +27,7 @@ var EXCLUDE_PATTERNS = [/(\([^()]*\))/, // "(E)", "(EN)", etc
 /(Replay)/];
 
 /**
- * returns provided string once any poritions matching EXCLUDE_PATTERNS are removed.
+ * Returns provided string once any portions matching EXCLUDE_PATTERNS are removed.
  */
 function trimContents(s) {
   s = s.trim();
@@ -40,7 +41,6 @@ function trimContents(s) {
       var p = _step.value;
 
       var regex = new RegExp(p, 'ig');
-
       var match = void 0;
       // eslint-disable-next-line
       while (match = regex.exec(s)) {
@@ -67,6 +67,13 @@ function trimContents(s) {
 
   return s.trim();
 }
+
+/**
+ * Removes any leading grammar articles from the given text string, and returns the result.
+ */
+//export function stripArticles(s) {
+//
+//}
 
 async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
@@ -127,7 +134,7 @@ function formattedText(text, bold) {
   }
 
   var tmp = nodes.map(function (n) {
-    return "<span>\n      " + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + "\n    </span>";
+    return '<span>\n      ' + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + '\n    </span>';
   });
   return tmp.join(''); // one combined string
 }
@@ -145,23 +152,42 @@ function randomFont(id) {
 
   var fontSize = 14 + Math.floor(Math.random() * 8);
   console.log("setting fontsize to " + fontSize);
-  style.fontSize = fontSize + "px";
+  style.fontSize = fontSize + 'px';
 }
 
-(async function () {
-  randomFont('front');
-  randomFont('back');
+/**
+ * Defines possible actions for how to handle injecting a sentence into an element.
+ * TOOD: can make this enum when we start using typescript
+ * https://masteringjs.io/tutorials/fundamentals/enum
+ */
+var InjectionAction = {
+  Prepend: 'prepend',
+  Append: 'append',
+  Replace: 'replace'
+};
 
-  var _getFront = getFront(),
-      _getFront2 = _slicedToArray(_getFront, 2),
-      frontHtml = _getFront2[0],
-      frontText = _getFront2[1];
+/**
+ * Modifies a given html element by injecting a relevant sentence to its contents (if possible).
+ * @param {string} id html element ID
+ * @param {string} prepend key in InjectionAction, defining how to insert the sentence.
+ * @returns {void}
+ */
+async function injectSentences(id) {
+  var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : InjectionAction.Prepend;
 
-  console.log('frontHtml = ');
-  console.log(frontHtml);
-  console.log("frontText=\"" + frontText + "\"");
+  var $elem = $('#' + id); // eslint-disable-line
+  if (!$elem) return; // ensure element exists
 
-  var sentences = await fetchSentences(frontText);
+  var _parseText = parseText(id),
+      _parseText2 = _slicedToArray(_parseText, 2),
+      elemHtml = _parseText2[0],
+      elemText = _parseText2[1];
+
+  console.log('elemHtml = ');
+  console.log(elemHtml);
+  console.log('elemText="' + elemText + '"');
+
+  var sentences = await fetchSentences(elemText);
   console.log("sentences = ");
   console.log(sentences);
 
@@ -169,8 +195,23 @@ function randomFont(id) {
   var s = sentences[index];
   console.log('s =');
   console.log(s);
-  if (s) {
-    // eslint-disable-next-line
-    $('#front').html("\n      " + formattedText(s.text, s.bold) + "\n      <br/><br/>\n      " + frontHtml + "\n    ");
+
+  if (!s) return;
+
+  var newHtml = '' + formattedText(s.text, s.bold);
+  if (mode === InjectionAction.Prepend) {
+    newHtml = newHtml + '<br/><br/>' + elemHtml;
+  } else if (mode === InjectionAction.Append) {
+    newHtml = elemHtml + '<br/><br/>' + newHtml;
   }
+
+  $elem.html(newHtml); // eslint-disable-line
+}
+
+(async function () {
+  randomFont('front');
+  randomFont('back');
+
+  injectSentences('front', InjectionAction.Prepend);
+  injectSentences('back', InjectionAction.Append);
 })();
