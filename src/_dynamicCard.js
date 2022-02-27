@@ -3,11 +3,11 @@
  * e.g. gets the text content of the front of the Anki card.
  * https://www.geeksforgeeks.org/how-to-get-all-html-content-from-domparser-excluding-the-outer-body-tag/
  */
-function parseText(id, removeArticle=true) {
+function parseText(id, removeArticle = true) {
   const orig = $(`#${id}`).html(); // eslint-disable-line
   // get just the inner html values
   const parser = new DOMParser();
-  let doc = parser.parseFromString(orig, "text/html");
+  let doc = parser.parseFromString(orig, 'text/html');
 
   const val = doc.all[0].textContent;
   //console.log("parsed val = "); console.log(val);
@@ -24,8 +24,8 @@ const EXCLUDE_PATTERNS = [
   /(\([^()]*\))/, // "(E)", "(EN)", etc
   /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
   /(\[[^[\]]*\])/, // "[P]", "[PT]", etc
-  /(-&gt|->)/,     // "->", "-&gt"
-  /(Replay)/,     // hack for Android (must be coming from audio element...)
+  /(-&gt|->)/, // "->", "-&gt"
+  /(Replay)/, // hack for Android (must be coming from audio element...)
 ];
 
 /**
@@ -38,8 +38,9 @@ export function trimContents(s) {
     const regex = new RegExp(p, 'ig');
     let match;
     // eslint-disable-next-line
-    while (match = regex.exec(s)) {
-      const left = s.substring(0, match.index), right = s.substring(match.index + match[0].length + 1, s.length);
+    while ((match = regex.exec(s))) {
+      const left = s.substring(0, match.index),
+        right = s.substring(match.index + match[0].length + 1, s.length);
       s = left + right;
       //console.log(`left: "${left}", right: "${right}", s: "${s}"`);
     }
@@ -47,6 +48,7 @@ export function trimContents(s) {
   return s.trim();
 }
 
+// prettier-ignore
 const EXCLUDE_ARTICLES = [
   // spanish articles
   "los", "los", "las", "las",
@@ -90,7 +92,7 @@ export function stripArticle(s) {
 
   for (const art of EXCLUDE_ARTICLES) {
     //console.log("checking for article: " + art);
-    const index = s.toLowerCase().indexOf(art.toLowerCase())
+    const index = s.toLowerCase().indexOf(art.toLowerCase());
     // ensure any match is a complete word (i.e. followed by a space)
     if (index === 0 && s[art.length] === ' ') {
       //console.log('found match, index = ' + index);
@@ -103,9 +105,13 @@ export function stripArticle(s) {
 async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
   // eslint-disable-next-line
-  const data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', {phrase: val, offset: 0 });
+  const data = await $.get(
+    'https://beta.engbert.me/api/tools/vocab/sentences',
+    { phrase: val, offset: 0 }
+  );
   console.log('api call result:');
   console.log(data);
+
   return data.sentences;
 }
 
@@ -136,14 +142,14 @@ function formattedText(text, bold) {
     });
   }
 
-  const tmp = nodes.map((n) => (
-    `<span>
+  const tmp = nodes.map(
+    (n) =>
+      `<span>
       ${n.bold ? '<strong>' + n.content + '</strong>' : n.content}
     </span>`
-  ));
+  );
   return tmp.join(''); // one combined string
 }
-
 
 function randomFont(id) {
   // https://www.reddit.com/6u1kvm
@@ -154,10 +160,10 @@ function randomFont(id) {
   const elem = document.getElementById(id);
   if (!elem) return;
   const style = elem.style;
-  style.fontFamily = "random_" + Math.floor(Math.random() * 36);
+  style.fontFamily = 'random_' + Math.floor(Math.random() * 36);
 
   const fontSize = 16 + Math.floor(Math.random() * 8);
-  console.log("setting fontsize to " + fontSize);
+  console.log('setting fontsize to ' + fontSize);
   style.fontSize = `${fontSize}px`;
 }
 
@@ -178,7 +184,11 @@ const InjectionAction = {
  * @param {string} prepend key in InjectionAction, defining how to insert the sentence.
  * @returns {void}
  */
-async function injectSentences(id, mode=InjectionAction.Prepend, removeArticle=true) {
+async function injectSentences(
+  id,
+  mode = InjectionAction.Prepend,
+  removeArticle = true
+) {
   const $elem = $(`#${id}`); // eslint-disable-line
   const [elemHtml, elemText] = parseText(id, removeArticle);
   console.log('elemHtml = ');
@@ -191,7 +201,7 @@ async function injectSentences(id, mode=InjectionAction.Prepend, removeArticle=t
     return;
   }
   const sentences = await fetchSentences(elemText);
-  console.log("sentences = ");
+  console.log('sentences = ');
   console.log(sentences);
 
   const index = Math.floor(Math.random() * sentences.length);
@@ -215,8 +225,6 @@ function elementExists(id) {
   const $elem = $(`#${id}`); // eslint-disable-line
   return $elem.length > 0;
 }
-
-
 
 (async () => {
   randomFont('front');

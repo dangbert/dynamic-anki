@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -10,10 +10,10 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function parseText(id) {
   var removeArticle = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
-  var orig = $("#" + id).html(); // eslint-disable-line
+  var orig = $('#' + id).html(); // eslint-disable-line
   // get just the inner html values
   var parser = new DOMParser();
-  var doc = parser.parseFromString(orig, "text/html");
+  var doc = parser.parseFromString(orig, 'text/html');
 
   var val = doc.all[0].textContent;
   //console.log("parsed val = "); console.log(val);
@@ -74,6 +74,7 @@ function trimContents(s) {
   return s.trim();
 }
 
+// prettier-ignore
 var EXCLUDE_ARTICLES = [
 // spanish articles
 "los", "los", "las", "las", "unos", "unos", "unas", "unas", "el", "el", "la", "la", "un", "un", "una", "una",
@@ -143,6 +144,7 @@ async function fetchSentences(val) {
   var data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', { phrase: val, offset: 0 });
   console.log('api call result:');
   console.log(data);
+
   return data.sentences;
 }
 
@@ -196,7 +198,7 @@ function formattedText(text, bold) {
   }
 
   var tmp = nodes.map(function (n) {
-    return "<span>\n      " + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + "\n    </span>";
+    return '<span>\n      ' + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + '\n    </span>';
   });
   return tmp.join(''); // one combined string
 }
@@ -210,11 +212,11 @@ function randomFont(id) {
   var elem = document.getElementById(id);
   if (!elem) return;
   var style = elem.style;
-  style.fontFamily = "random_" + Math.floor(Math.random() * 36);
+  style.fontFamily = 'random_' + Math.floor(Math.random() * 36);
 
   var fontSize = 16 + Math.floor(Math.random() * 8);
-  console.log("setting fontsize to " + fontSize);
-  style.fontSize = fontSize + "px";
+  console.log('setting fontsize to ' + fontSize);
+  style.fontSize = fontSize + 'px';
 }
 
 /**
@@ -238,7 +240,7 @@ async function injectSentences(id) {
   var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : InjectionAction.Prepend;
   var removeArticle = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
-  var $elem = $("#" + id); // eslint-disable-line
+  var $elem = $('#' + id); // eslint-disable-line
 
   var _parseText = parseText(id, removeArticle),
       _parseText2 = _slicedToArray(_parseText, 2),
@@ -247,7 +249,7 @@ async function injectSentences(id) {
 
   console.log('elemHtml = ');
   console.log(elemHtml);
-  console.log("elemText=\"" + elemText + "\"");
+  console.log('elemText="' + elemText + '"');
 
   // large texts are unlikely to get a sentence match
   if (elemText.length > 35) {
@@ -255,7 +257,7 @@ async function injectSentences(id) {
     return;
   }
   var sentences = await fetchSentences(elemText);
-  console.log("sentences = ");
+  console.log('sentences = ');
   console.log(sentences);
 
   var index = Math.floor(Math.random() * sentences.length);
@@ -265,18 +267,18 @@ async function injectSentences(id) {
 
   if (!s) return;
 
-  var newHtml = "" + formattedText(s.text, s.bold);
+  var newHtml = '' + formattedText(s.text, s.bold);
   if (mode === InjectionAction.Prepend) {
-    newHtml = newHtml + "<br/><br/>" + elemHtml;
+    newHtml = newHtml + '<br/><br/>' + elemHtml;
   } else if (mode === InjectionAction.Append) {
-    newHtml = elemHtml + "<br/><br/>" + newHtml;
+    newHtml = elemHtml + '<br/><br/>' + newHtml;
   }
 
   $elem.html(newHtml); // eslint-disable-line
 }
 
 function elementExists(id) {
-  var $elem = $("#" + id); // eslint-disable-line
+  var $elem = $('#' + id); // eslint-disable-line
   return $elem.length > 0;
 }
 
