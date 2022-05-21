@@ -54,6 +54,8 @@ yarn mocha
 
 # compile js file in build folder:
 yarn build
+# copy to anki directory:
+yarn deploy
 ````
 
 You can also open `index.html` in your browser to simulate rendering a flashcard (for quick testing of this js lib).  But ultimately you should open Anki and view a few cards back to back (while viewing the browser dev console for errors).
@@ -63,3 +65,9 @@ You can also open `index.html` in your browser to simulate rendering a flashcard
 Some functions in _dynamicCard.js are exported (so they can be unit tested).  Babel is being used to compiled a version of this file without exports that will run in [most browsers](https://caniuse.com/es6).
 
 In the future babel will be further helpful if I start using typescript for this repo.
+
+---
+## Inspiration / See also:
+Below are some interesting examples I'd like to dive into more for inspiration.
+
+* [anki-canvas](https://github.com/pigoz/anki-canvas)

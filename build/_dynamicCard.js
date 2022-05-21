@@ -2,6 +2,10 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+var VOCAB_ENDPOINT_URL = 'https://beta.engbert.me/api/tools/vocab/sentences';
+//const VOCAB_ENDPOINT_URL = 'http://localhost:5000/api/tools/vocab/sentences'; // for testing
+var VOCAB_PAGE_URL = 'https://beta.engbert.me/tools/vocab'; // UI page
+
 /**
  * gets the html content and stripped text content of a given text element (specified by id).
  * e.g. gets the text content of the front of the Anki card.
@@ -141,16 +145,28 @@ function stripArticle(s) {
 async function fetchSentences(val) {
   //const data = await $.get('http://localhost:5000/api/tools/vocab/sentences', {phrase: val, offset: 0 });
   // eslint-disable-next-line
-  var data = await $.get('https://beta.engbert.me/api/tools/vocab/sentences', { phrase: val, offset: 0 });
-  console.log('api call result:');
-  console.log(data);
+  var data = await $.get(VOCAB_ENDPOINT_URL, { phrase: val, offset: 0 });
+  //console.log('api call result:');
+  //console.log(data);
 
   return data.sentences;
 }
 
 /**
- * format a sentence by bolding the desired indices.
- * based on https://github.com/dangbert/personalpedia/blob/master/react-app/src/components/ToolsApp/Vocab.tsx#L142
+ * Return url to vocab (UI) page for desired search phrase.
+ */
+function buildVocabUrl(phrase) {
+  var url = new URL(VOCAB_PAGE_URL);
+
+  return url + '?q=' + phrase;
+  //Object.entries({
+  //  q: phrase,
+  //}).forEach(([name, value]) => url.searchParams.set(name, value));
+  //return url.href;
+}
+
+/**
+ * Format a sentence by bolding the desired indices.
  */
 function formattedText(text, bold) {
   var index = 0;
@@ -198,25 +214,42 @@ function formattedText(text, bold) {
   }
 
   var tmp = nodes.map(function (n) {
-    return '<span>\n      ' + (n.bold ? '<strong>' + n.content + '</strong>' : n.content) + '\n    </span>';
+    if (!n.bold) {
+      return '<span>' + n.content + '</span>';
+    }
+
+    var phrase = n.content.trim();
+    var url = buildVocabUrl(phrase);
+    return '\n      <a href="' + url + '" style="text-decoration: underline; color: inherit;">\n        <strong>' + phrase + '</strong></a>';
   });
   return tmp.join(''); // one combined string
 }
 
+/**
+ * Randomize the font style of the given html element by id.
+ */
 function randomFont(id) {
+  var lowBound = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
+  var highBound = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 24;
+
   // https://www.reddit.com/6u1kvm
   //var sheet = window.document.styleSheets[0];
   //sheet.insertRule('strong { color: red; }'
   //sheet.cssRules.length);
 
   var elem = document.getElementById(id);
-  if (!elem) return;
+  if (!elem) {
+    //console.log(`elem not found: ${id}`);
+    return;
+  }
   var style = elem.style;
-  style.fontFamily = 'random_' + Math.floor(Math.random() * 36);
+  // TODO: get this working (these fonts aren't available...)
+  //style.fontFamily = 'random_' + Math.floor(Math.random() * 36);
 
-  var fontSize = 16 + Math.floor(Math.random() * 8);
+  var fontSize = lowBound + Math.floor(Math.random() * (highBound - lowBound));
   console.log('setting fontsize to ' + fontSize);
   style.fontSize = fontSize + 'px';
+  return fontSize;
 }
 
 /**
@@ -246,28 +279,36 @@ async function injectSentences(id) {
       _parseText2 = _slicedToArray(_parseText, 2),
       elemHtml = _parseText2[0],
       elemText = _parseText2[1];
-
-  console.log('elemHtml = ');
-  console.log(elemHtml);
-  console.log('elemText="' + elemText + '"');
+  //console.log('elemHtml = ');
+  //console.log(elemHtml);
 
   // large texts are unlikely to get a sentence match
+
+
   if (elemText.length > 35) {
-    console.log('skipping sentence lookup for large text');
+    console.log('skipping sentence lookup for large text (length ' + elemText.length + ')');
     return;
   }
+  if (!elemText) {
+    console.log('skipping sentence lookup for empty phrase');
+    return;
+  }
+
+  console.log('injecting sentences, elemText="' + elemText + '"');
   var sentences = await fetchSentences(elemText);
-  console.log('sentences = ');
-  console.log(sentences);
+  //console.log('sentences = ');
+  //console.log(sentences);
 
   var index = Math.floor(Math.random() * sentences.length);
   var s = sentences[index];
-  console.log('s =');
-  console.log(s);
+  //console.log('s =');
+  //console.log(s);
 
   if (!s) return;
 
-  var newHtml = '' + formattedText(s.text, s.bold);
+  var injectedId = id + '-injected';
+  var newHtml = '<div id="' + injectedId + '">' + formattedText(s.text, s.bold) + '</div>';
+
   if (mode === InjectionAction.Prepend) {
     newHtml = newHtml + '<br/><br/>' + elemHtml;
   } else if (mode === InjectionAction.Append) {
@@ -275,6 +316,7 @@ async function injectSentences(id) {
   }
 
   $elem.html(newHtml); // eslint-disable-line
+  randomFont(injectedId, 20, 28); // try to make bigger than original text on card
 }
 
 function elementExists(id) {
@@ -283,6 +325,7 @@ function elementExists(id) {
 }
 
 (async function () {
+  console.log('********');
   randomFont('front');
   randomFont('back');
 
@@ -297,4 +340,5 @@ function elementExists(id) {
   } else {
     injectSentences('front', InjectionAction.Prepend);
   }
+  console.log('^^^^^^^^\n\n');
 })();
