@@ -53,30 +53,23 @@ export function trimContents(s) {
 }
 
 // prettier-ignore
-const EXCLUDE_ARTICLES = [
-  // spanish articles
-  "los", "los", "las", "las",
-  "unos", "unos", "unas", "unas",
-  "el", "el", "la", "la",
-  "un", "un", "una", "una",
-
-  // portuguese articles
-  "os", "as", "o", "a",
-  "um", "uma", "umas", "uns",
-
+const EXCLUDE_ARTICLES = new Set([
   // english articles
   "the", "a", "an", 
 
-  // german articles
-  //   https://www.clozemaster.com/blog/german-definite-articles/
-  "der", "die", "das", "die",
-  "den", "dem", "des",
+  // dutch articles
+  "de", "het",
 
   // french articles
   //   https://mylanguages.org/french_articles.php
   "L’", // TODO: get this one to work (it isn't followed by a space)
   "le", "la", "les",
   "un", "une", "des",
+
+  // german articles
+  //   https://www.clozemaster.com/blog/german-definite-articles/
+  "der", "die", "das", "die",
+  "den", "dem", "des",
 
   // greek articles
   //  https://www.foundalis.com/lan/definart.htm
@@ -86,7 +79,21 @@ const EXCLUDE_ARTICLES = [
   "οι", "οι", "τα",
   "των", "των",	"των",
   "τους", "τις", "τα",
-];
+
+  // italian articles
+  //  http://www.italianlanguageguide.com/grammar/articles/
+  "il", "lo", "le", "la", "i", "gli", 
+
+  // portuguese articles
+  "os", "as", "o", "a",
+  "um", "uma", "umas", "uns",
+
+  // spanish articles
+  "los", "los", "las", "las",
+  "unos", "unos", "unas", "unas",
+  "el", "el", "la", "la",
+  "un", "un", "una", "una",
+]);
 
 /**
  * Removes any leading grammar articles from the given text string, and returns the result.

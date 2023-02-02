@@ -37,11 +37,15 @@ Note that the card template must have an element with `id="front"`.
 
 ## Status of the project:
 
-Supported languages for vocab sentences lookup:
+Supported languages for vocab sentence lookup:
 
 * de
 * en
+* el
 * es
+* fr
+* it
+* nl
 * pt
 
 Note: I added el and tr but they don't currently work with this lib (probably an issue with char encoding).
